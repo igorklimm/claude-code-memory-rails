@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+      - name: Lint shell scripts
+        run: |
+          shellcheck scripts/*.sh hooks/*.sh install.sh
+
+  smoke:
+    name: smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up test workspace
+        run: |
+          mkdir -p /tmp/test-workspace/wiki
+          mkdir -p /tmp/test-workspace/wiki/misc
+
+      - name: Run pipeline-remember (plan phase)
+        env:
+          CLAUDE_PROJECT_DIR: /tmp/test-workspace
+          MEMORY_RAILS_MIGRATE: "1"   # bypass DENY hook in CI (no Claude session)
+        run: |
+          output=$(bash scripts/pipeline-remember.sh "CI smoke test fact: memory-rails installed")
+          echo "$output"
+          echo "$output" | grep -q "BEGIN CONTENT" && echo "✓ pipeline emitted content block"
+          echo "$output" | grep -q "custody" && echo "✓ custody token line present"
+
+      - name: Verify lib-classify categories
+        run: |
+          source scripts/lib-classify.sh
+          result=$(classify_fact "the server deployment failed on VPS")
+          [ "$result" = "infrastructure" ] && echo "✓ classify infrastructure"
+          result=$(classify_fact "pricing strategy decision for Q3")
+          [ "$result" = "business" ] && echo "✓ classify business"
+          result=$(classify_fact "john is a Tier 1 coordinator agent")
+          [ "$result" = "agents" ] && echo "✓ classify agents"
+
+      - name: Verify custody token round-trip
+        run: |
+          source scripts/lib-custody.sh
+          sha=$(printf 'test-content' | custody_sha256_stdin)
+          token=$(custody_issue "/tmp/test-workspace/wiki/misc/test.md" "$sha" "smoke" "ci-session")
+          [ -f "$token" ] && echo "✓ custody token issued"
+          custody_validate_and_consume "/tmp/test-workspace/wiki/misc/test.md" "$sha" "ci-session"
+          echo "✓ custody token validated and consumed"
+
+      - name: DENY hook: blocks direct write without token
+        env:
+          MEMORY_RAILS_ENABLED: "1"
+        run: |
+          payload='{"tool_name":"Write","tool_input":{"file_path":"/tmp/test-workspace/wiki/misc/foo.md","content":"direct write"},"session_id":"ci-no-token"}'
+          result=$(echo "$payload" | bash hooks/pretool-memory-deny.sh; echo "exit:$?")
+          echo "$result"
+          echo "$result" | grep -q "exit:2" && echo "✓ DENY hook blocked direct write"
