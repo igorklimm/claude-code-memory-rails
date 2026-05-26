@@ -57,7 +57,7 @@ jobs:
           custody_validate_and_consume "/tmp/test-workspace/wiki/misc/test.md" "$sha" "ci-session"
           echo "✓ custody token validated and consumed"
 
-      - name: DENY hook: blocks direct write without token
+      - name: "DENY hook blocks direct write without token"
         env:
           MEMORY_RAILS_ENABLED: "1"
         run: |
