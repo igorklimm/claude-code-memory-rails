@@ -37,7 +37,7 @@ classify_fact() {
 
     # infrastructure: deploy, server, docker, network, hook
     case "$lower" in
-        *deploy*|*server*|*docker*|*kubernetes*|*hook*|*sync*|*vps*|*infra*|*infrastructure*) echo "infrastructure"; return ;;
+        *deploy*|*server*|*docker*|*kubernetes*|*hook*|*sync*|*vps*|*infra*) echo "infrastructure"; return ;;
     esac
 
     # decisions: mandate, decision, pivot, roadmap, sprint
@@ -52,7 +52,7 @@ classify_fact() {
 
     # research: paper, gist, study, research
     case "$lower" in
-        *paper*|*gist*|*study*|*research*|*whitepaper*) echo "research"; return ;;
+        *paper*|*gist*|*study*|*research*) echo "research"; return ;;
     esac
 
     echo "misc"
