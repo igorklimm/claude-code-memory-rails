@@ -73,7 +73,7 @@ if [ "$USE_WIKI" = "1" ]; then
     FIRST_TOKENS=$(echo "$SLUG" | cut -d- -f1-2)
     EXISTING=$(find "$CATEGORY_DIR" -maxdepth 1 -name "*${FIRST_TOKENS}*.md" -type f 2>/dev/null | head -1)
     if [ -n "$EXISTING" ]; then
-        TARGET_REL="${EXISTING#$WORKSPACE/}"
+        TARGET_REL="${EXISTING#"$WORKSPACE"/}"
         MODE="append"
     else
         TARGET_REL="wiki/$CATEGORY/$SLUG.md"

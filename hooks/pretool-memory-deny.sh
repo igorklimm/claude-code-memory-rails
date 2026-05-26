@@ -78,7 +78,7 @@ esac
 # Format: ISO8601\tagent_id\trun_id\ttarget_path  (tab-separated, append-only)
 if [ "${MEMORY_RAILS_MIGRATE:-0}" = "1" ]; then
     SCRIPT_DIR_AUDIT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    AUDIT_LOG="${SCRIPT_DIR_AUDIT}/../../scripts/memory-rails/migrate-audit.log"
+    AUDIT_LOG="${MEMORY_RAILS_AUDIT_LOG:-${SCRIPT_DIR_AUDIT}/../scripts/migrate-audit.log}"
     AUDIT_TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     AUDIT_AGENT="${PAPERCLIP_AGENT_ID:-unknown-agent}"
     AUDIT_RUN="${PAPERCLIP_RUN_ID:-unknown-run}"
@@ -101,7 +101,7 @@ esac
 
 # --- chain-of-custody check ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CUSTODY_LIB="${SCRIPT_DIR}/../../scripts/memory-rails/lib-custody.sh"
+CUSTODY_LIB="${MEMORY_RAILS_CUSTODY_LIB:-${SCRIPT_DIR}/../scripts/lib-custody.sh}"
 if [ ! -f "$CUSTODY_LIB" ]; then
     # Hook installed but lib missing — fail-open with warning to avoid bricking agent.
     echo "[memory-rails] WARN: lib-custody.sh missing at $CUSTODY_LIB — failing open" >&2
@@ -125,15 +125,12 @@ cat >&2 <<EOF
 This file is governed by the memory-rails state-machine.
 No valid custody token found for this Write (target + content hash + session).
 
-Use one of these slash commands instead:
+Use the slash command instead:
   /remember <fact>            → facts about entities (people, agents, systems)
-  /update-roadmap <change>    → ROADMAP.md changes
-  /lesson <text>              → project_lessons_log.md appends
-  /research-summary <topic>   → research/ fetches
 
 Why this exists: prevents silent overwrites of prior facts, ensures
 index.md + log.md + cross-refs stay synced, enforces conflict-handling
-per wiki-memory-standard.md (strikethrough-supersede on contradictions).
+per docs/wiki-memory-standard.md (strikethrough-supersede on contradictions).
 
 Emergency bypass (use sparingly):
   export MEMORY_RAILS_MIGRATE=1   # bulk migration sessions only

@@ -49,7 +49,7 @@ fi
 # --- Step 4: build append content ---
 CITE_LINE=""
 if [ -n "$CITATION" ]; then
-    CITE_LINE="  _Source: $CITATION, $TODAY_"
+    CITE_LINE="  _Source: ${CITATION}, ${TODAY}_"
 fi
 
 NEW_CONTENT=$(cat <<EOF

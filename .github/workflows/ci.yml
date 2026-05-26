@@ -43,9 +43,9 @@ jobs:
           source scripts/lib-classify.sh
           result=$(classify_fact "the server deployment failed on VPS")
           [ "$result" = "infrastructure" ] && echo "✓ classify infrastructure"
-          result=$(classify_fact "pricing strategy decision for Q3")
+          result=$(classify_fact "pricing for Q3 product launch")
           [ "$result" = "business" ] && echo "✓ classify business"
-          result=$(classify_fact "john is a Tier 1 coordinator agent")
+          result=$(classify_fact "Claude Code is an agent for software work")
           [ "$result" = "agents" ] && echo "✓ classify agents"
 
       - name: Verify custody token round-trip
